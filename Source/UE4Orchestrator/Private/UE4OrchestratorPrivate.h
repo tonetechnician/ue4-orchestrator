@@ -1,13 +1,18 @@
 /* -*- mode: c; tab-width: 4; indent-tabs-mode: nil; -*- */
 
 #include "UE4Orchestrator.h"
+#include "Misc/FileHelper.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "UE4OrchestratorPrivate.generated.h"
 
 #pragma once
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRunMRPDelegate);
+
 ////////////////////////////////////////////////////////////////////////////////
 
-UCLASS()
+UCLASS(BlueprintType)
 class UE4ORCHESTRATOR_API URCHTTP : public UObject, public FTickableGameObject
 {
     GENERATED_UCLASS_BODY()
@@ -32,6 +37,14 @@ class UE4ORCHESTRATOR_API URCHTTP : public UObject, public FTickableGameObject
     virtual void Serialize(FArchive& ar) override;
     virtual void PostLoad() override;
     virtual void PostInitProperties() override;
+
+    UFUNCTION(
+        BlueprintPure,
+        Category = "Persistence",
+        meta = (
+            DisplayName = "Get Savegame Manager",
+            Keywords = "SavegameManager"))
+    URCHTTP* GetURCHTTP();
 #if WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& evt) override;
 #endif
@@ -39,7 +52,8 @@ class UE4ORCHESTRATOR_API URCHTTP : public UObject, public FTickableGameObject
     void SetPollInterval(int v);
 
   private:
-
+    UPROPERTY(Transient)
+    URCHTTP* httpInstance;
     struct mg_mgr         mgr;
     struct mg_connection* conn;
 
@@ -53,39 +67,44 @@ class UE4ORCHESTRATOR_API URCHTTP : public UObject, public FTickableGameObject
     int poll_interval;
     int poll_ms;
 
+    struct mg_bind_opts bind_opts;
+    const char* err_str;
+
     /*
      *  Pak file.
      */
-    FPakPlatformFile *PakFileMgr;
+    //FPakPlatformFile *PakFileMgr;
 
   public:
 
-    UFUNCTION()
+    UFUNCTION(BlueprintPure, Category = "Beamm|Classes|Http Server")
     static URCHTTP* Get();
 
-    UFUNCTION()
-    int MountPakFile(const FString& PakPath, bool bLoadContent);
+    UPROPERTY(BlueprintAssignable, Category = "Beamm|Events|HTTP Events")
+    FRunMRPDelegate RunMRP;
+    //UFUNCTION()
+    //int MountPakFile(const FString& PakPath, bool bLoadContent);
 
-    /*
-     *  TODO: LoadObject should probably be renamed to LoadObjectPak() or
-     *        something to that effect.
-     */
-    UFUNCTION()
-    UObject* LoadObject(const FString& ObjectPath);
+    ///*
+    // *  TODO: LoadObject should probably be renamed to LoadObjectPak() or
+    // *        something to that effect.
+    // */
+    //UFUNCTION()
+    //UObject* LoadObject(const FString& ObjectPath);
 
-    UFUNCTION()
-    int UnloadObject(const FString& ObjectPath);
+    //UFUNCTION()
+    //int UnloadObject(const FString& ObjectPath);
 
-    UFUNCTION()
-    void GarbageCollect();
+    //UFUNCTION()
+    //void GarbageCollect();
 
-    UFUNCTION()
-    void FinishAllShaderCompilation();
+    //UFUNCTION()
+    //void FinishAllShaderCompilation();
 
     /*
      * Frame End
      */
-    UFUNCTION()
-    virtual void GameRenderSync();
+    //UFUNCTION()
+    //virtual void GameRenderSync();
     
 };

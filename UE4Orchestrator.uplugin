@@ -12,11 +12,11 @@
     "CanContainContent": true,
     "IsBetaVersion" : true,
     "Installed" : true,
-    "Modules" : [
+    "Modules": [
         {
             "Name": "UE4Orchestrator",
-            "Type": "Developer",
+            "Type": "Editor",
             "LoadingPhase": "Default"
-        },
+        }
     ]
 }
